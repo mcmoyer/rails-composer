@@ -575,6 +575,7 @@ end
 prefs[:form_builder] = multiple_choice "Use a form builder gem?", [["None", "none"], ["SimpleForm", "simple_form"]] unless prefs.has_key? :form_builder
 
 prefs[:pry] = yes_wizard? "Use Pry Debugging in development?" unless prefs.has_key? :pry
+prefs[:sextant] = yes_wizard? "Use Sextant in development?" unless prefs.has_key? :sextant
 ## MVC
 if (recipes.include? 'models') && (recipes.include? 'controllers') && (recipes.include? 'views') && (recipes.include? 'routes')
   if prefer :authorization, 'cancan'
@@ -842,6 +843,11 @@ end
 ## Pry Debugging
 if prefer :pry, true
   gem 'pry-rails', :group => [:development, :test]
+end
+
+## Sextant
+if prefer :sextant, true
+  gem 'sextant', :group => [:development, :test]
 end
 ## Gems from a defaults file or added interactively
 gems.each do |g|
