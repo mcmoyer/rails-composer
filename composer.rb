@@ -574,6 +574,7 @@ end
 ## Form Builder
 prefs[:form_builder] = multiple_choice "Use a form builder gem?", [["None", "none"], ["SimpleForm", "simple_form"]] unless prefs.has_key? :form_builder
 
+prefs[:pry] = yes_wizard? "Use Pry Debugging in development?" unless prefs.has_key? :pry
 ## MVC
 if (recipes.include? 'models') && (recipes.include? 'controllers') && (recipes.include? 'views') && (recipes.include? 'routes')
   if prefer :authorization, 'cancan'
@@ -838,6 +839,10 @@ if prefer :railsapps, 'rails-prelaunch-signup'
   gem 'jquery-datatables-rails', '>= 1.11.2'
 end
 
+## Pry Debugging
+if prefer :pry, true
+  gem 'pry-rails', :group => [:development, :test]
+end
 ## Gems from a defaults file or added interactively
 gems.each do |g|
   gem(*g)
