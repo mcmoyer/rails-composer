@@ -555,7 +555,7 @@ end
 
 ## Authentication and Authorization
 if recipes.include? 'models'
-  prefs[:authentication] = multiple_choice "Authentication?", [["None", "none"], ["Devise", "devise"], ["OmniAuth", "omniauth"]] unless prefs.has_key? :authentication
+  prefs[:authentication] = multiple_choice "Authentication?", [["None", "none"], ["Devise", "devise"], ["OmniAuth", "omniauth"], ["RubyCAS", 'rubycas']] unless prefs.has_key? :authentication
   case prefs[:authentication]
     when 'devise'
       if prefer :orm, 'mongoid'
@@ -806,6 +806,9 @@ gem 'omniauth-github' if prefer :omniauth_provider, 'github'
 gem 'omniauth-linkedin' if prefer :omniauth_provider, 'linkedin'
 gem 'omniauth-google-oauth2' if prefer :omniauth_provider, 'google_oauth2'
 gem 'omniauth-tumblr' if prefer :omniauth_provider, 'tumblr'
+
+## Authentication (RubyCas)
+gem 'rubycas-client' if prefer :authentication, 'rubycas'
 
 ## Authorization
 if prefer :authorization, 'cancan'
