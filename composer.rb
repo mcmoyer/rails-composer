@@ -576,6 +576,8 @@ prefs[:form_builder] = multiple_choice "Use a form builder gem?", [["None", "non
 
 prefs[:pry] = yes_wizard? "Use Pry Debugging in development?" unless prefs.has_key? :pry
 prefs[:sextant] = yes_wizard? "Use Sextant in development?" unless prefs.has_key? :sextant
+prefs[:capistrano] = yes_wizard? "Use Capistrano for deployment?" unless prefs.has_key? :capistrano
+
 ## MVC
 if (recipes.include? 'models') && (recipes.include? 'controllers') && (recipes.include? 'views') && (recipes.include? 'routes')
   if prefer :authorization, 'cancan'
@@ -849,6 +851,13 @@ end
 if prefer :sextant, true
   gem 'sextant', :group => [:development, :test]
 end
+
+## Capistrano
+if prefer :capistrano, true
+  gem 'capistrano', :group => [:development, :test]
+  gem 'capistrano_colors', :group => [:development, :test]
+end
+
 ## Gems from a defaults file or added interactively
 gems.each do |g|
   gem(*g)
@@ -1797,6 +1806,11 @@ FILE
   unless prefer :railsapps, 'rails-recurly-subscription-saas'
     run 'bundle exec rake db:seed'
   end
+
+  ## CAPISTRANO
+  say_wizard "Capifying project"
+  run "capify ." if prefer :capistrano, true
+  
   ### GIT ###
   git :add => '-A' if prefer :git, true
   git :commit => '-qm "rails_apps_composer: set up database"' if prefer :git, true
