@@ -266,7 +266,7 @@ prefs[:railsapps] = multiple_choice "Install an example application?",
   ["rails3-mongoid-devise", "rails3-mongoid-devise"],
   ["rails3-mongoid-omniauth", "rails3-mongoid-omniauth"],
   ["rails3-subdomains", "rails3-subdomains"],
-  ["rails3-bootstrap-minitest", "rails3-bootstrap-minitest"]] unless prefs.has_key? :railsapps
+  ["rails3-bootstrap-minitest-sqlserver-rubycas", "rails3-bootstrap-minitest-sqlserver-rubycas"]] unless prefs.has_key? :railsapps
 
 case prefs[:railsapps]
   when 'saas'
@@ -435,7 +435,7 @@ case prefs[:railsapps]
     prefs[:quiet_assets] = true
     prefs[:local_env_file] = true
     prefs[:better_errors] = true
-  when 'rails3-bootstrap-minitest'
+  when 'rails3-bootstrap-minitest-sqlserver-rubycas'
     prefs[:git] = true
     prefs[:database] = 'sqlserver'
     prefs[:unit_test] = 'minitest'
@@ -444,7 +444,7 @@ case prefs[:railsapps]
     prefs[:frontend] = 'bootstrap'
     prefs[:bootstrap] = 'sass'
     prefs[:email] = 'none'
-    prefs[:authentication] = 'none'
+    prefs[:authentication] = 'rubycas'
     prefs[:authorization] = 'none'
     prefs[:starter_app] = 'none'
     prefs[:form_builder] = 'simple_form'
