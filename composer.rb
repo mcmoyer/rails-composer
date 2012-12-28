@@ -96,6 +96,7 @@ end
 
 def copy_from_repo(filename, opts = {})
   repo = 'https://raw.github.com/RailsApps/rails-composer/master/files/'
+  repo = File.expand_path("../files", __FILE__) + "/"
   repo = opts[:repo] unless opts[:repo].nil?
   if (!opts[:prefs].nil?) && (!prefs.has_value? opts[:prefs])
     return
@@ -264,7 +265,8 @@ prefs[:railsapps] = multiple_choice "Install an example application?",
   ["rails3-devise-rspec-cucumber", "rails3-devise-rspec-cucumber"],
   ["rails3-mongoid-devise", "rails3-mongoid-devise"],
   ["rails3-mongoid-omniauth", "rails3-mongoid-omniauth"],
-  ["rails3-subdomains", "rails3-subdomains"]] unless prefs.has_key? :railsapps
+  ["rails3-subdomains", "rails3-subdomains"],
+  ["rails3-bootstrap-minitest", "rails3-bootstrap-minitest"]] unless prefs.has_key? :railsapps
 
 case prefs[:railsapps]
   when 'saas'
@@ -433,6 +435,28 @@ case prefs[:railsapps]
     prefs[:quiet_assets] = true
     prefs[:local_env_file] = true
     prefs[:better_errors] = true
+  when 'rails3-bootstrap-minitest'
+    prefs[:git] = true
+    prefs[:database] = 'sqlserver'
+    prefs[:unit_test] = 'minitest'
+    prefs[:integration] = 'minitest-capybara'
+    prefs[:fixtures] = 'factory_girl'
+    prefs[:frontend] = 'bootstrap'
+    prefs[:bootstrap] = 'sass'
+    prefs[:email] = 'none'
+    prefs[:authentication] = 'none'
+    prefs[:authorization] = 'none'
+    prefs[:starter_app] = 'none'
+    prefs[:form_builder] = 'simple_form'
+    prefs[:quiet_assets] = true
+    prefs[:local_env_file] = true
+    prefs[:better_errors] = true
+    prefs[:templates] = 'haml'
+    prefs[:dev_webserver] = 'puma'
+    prefs[:prod_webserver] = 'puma'
+    prefs[:rvmrc] = false
+    prefs[:ban_spiders] = true
+    prefs[:github] = false
 end
 
 
@@ -478,7 +502,7 @@ end
 
 ## Database Adapter
 prefs[:database] = multiple_choice "Database used in development?", [["SQLite", "sqlite"], ["PostgreSQL", "postgresql"], 
-  ["MySQL", "mysql"], ["MongoDB", "mongodb"]] unless prefs.has_key? :database
+  ["MySQL", "mysql"], ["MongoDB", "mongodb"], ["SqlServer", "sqlserver"]] unless prefs.has_key? :database
 case prefs[:database]
   when 'mongodb'
     unless sqlite_detected
@@ -621,6 +645,7 @@ after_everything do
   gsub_file "README.textile", /SQLite/, "PostgreSQL" if prefer :database, 'postgresql'
   gsub_file "README.textile", /SQLite/, "MySQL" if prefer :database, 'mysql'
   gsub_file "README.textile", /SQLite/, "MongoDB" if prefer :database, 'mongodb'
+  gsub_file "README.textile", /SQLite/, "SqlServer" if prefer :database, 'sqlserver'
   gsub_file "README.textile", /ActiveRecord/, "the Mongoid ORM" if prefer :orm, 'mongoid'
 
   # Template Engine
@@ -703,6 +728,10 @@ unless File.open('Gemfile').lines.any?{|line| line.include?('pg')}
 end
 unless File.open('Gemfile').lines.any?{|line| line.include?('mysql2')}
   gem 'mysql2', '>= 0.3.11' if prefer :database, 'mysql'
+end
+unless File.open('Gemfile').lines.any?{|line| line.include?('sqlserver')}
+  gem 'activerecord-sqlserver-adapter', '>=3.0.10'
+  gem 'tiny_tds', '>=0.5.1'
 end
 
 ## Template Engine
@@ -819,6 +848,7 @@ git :commit => '-qm "rails_apps_composer: Gemfile"' if prefer :git, true
 after_bundler do
   copy_from_repo 'config/database-postgresql.yml', :prefs => 'postgresql'
   copy_from_repo 'config/database-mysql.yml', :prefs => 'mysql'
+  copy_from_repo 'config/database-sqlserver.yml', :prefs => 'sqlserver'
   generate 'mongoid:config' if prefer :orm, 'mongoid'
   remove_file 'config/database.yml' if prefer :orm, 'mongoid'
   if prefer :database, 'postgresql'
@@ -855,7 +885,23 @@ after_bundler do
     gsub_file "config/database.yml", /database: myapp_test/,        "database: #{app_name}_test"
     gsub_file "config/database.yml", /database: myapp_production/,  "database: #{app_name}_production"
   end
-  unless prefer :database, 'sqlite'
+  if prefer :database, 'sqlserver'
+    sqlserver_username = ask_wizard("Username for Sqlserver? (leave blank to use the app name)")
+    if sqlserver_username.blank?
+      gsub_file "config/database.yml", /username: .*/, "username: #{app_name}"
+    else
+      gsub_file "config/database.yml", /username: .*/, "username: #{sqlserver_username}"
+      sqlserver_password = ask_wizard("Password for Sqlserver user #{sqlserver_username}?")
+      gsub_file "config/database.yml", /password:/, "password: #{sqlserver_password}"
+      say_wizard "set config/database.yml for username/password #{sqlserver_username}/#{sqlserver_password}"
+    end
+    sqlserver_host = ask_wizard("Host for Sqlserver?")
+    gsub_file "config/database.yml", /host:/, "host: #{sqlserver_host}"
+    gsub_file "config/database.yml", /database: myapp_development/, "database: #{app_name}_development"
+    gsub_file "config/database.yml", /database: myapp_test/,        "database: #{app_name}_test"
+    gsub_file "config/database.yml", /database: myapp_production/,  "database: #{app_name}_production"
+  end
+  unless prefer :database, 'sqlite' or prefer :database, 'sqlserver'
     affirm = yes_wizard? "Drop any existing databases named #{app_name}?"
     if affirm
       run 'bundle exec rake db:drop'
@@ -863,7 +909,7 @@ after_bundler do
       raise "aborted at user's request"
     end
   end
-  run 'bundle exec rake db:create:all' unless prefer :orm, 'mongoid'
+  run 'bundle exec rake db:create:all' unless prefer :orm, 'mongoid' or prefer :database, 'sqlserver'
   run 'bundle exec rake db:create' if prefer :orm, 'mongoid'
   ## Git
   git :add => '-A' if prefer :git, true
