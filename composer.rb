@@ -95,8 +95,8 @@ def copy_from(source, destination)
 end
 
 def copy_from_repo(filename, opts = {})
-  repo = 'https://raw.github.com/RailsApps/rails-composer/master/files/'
-  repo = File.expand_path("../files", __FILE__) + "/"
+  repo = 'https://raw.github.com/mcmoyer/rails-composer/master/files/'
+  ##repo = File.expand_path("../files", __FILE__) + "/"
   repo = opts[:repo] unless opts[:repo].nil?
   if (!opts[:prefs].nil?) && (!prefs.has_value? opts[:prefs])
     return
